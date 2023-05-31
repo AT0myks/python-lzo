@@ -10,6 +10,7 @@ jobs:
     wheels:
         name: Build wheels on ${{ matrix.os }} for ${{ matrix.arch }}
         runs-on: ${{ matrix.os }}
+        if: ${{ false }}
         strategy:
             fail-fast: false
             matrix:
@@ -56,27 +57,28 @@ jobs:
     wheels-old:
         name: Build old wheels on ${{ matrix.os }} for ${{ matrix.arch }}
         runs-on: ${{ matrix.os }}
+        if: ${{ false }}
         strategy:
             fail-fast: false
             matrix:
-                # os: [ubuntu-20.04, windows-2019, macos-11]
-                # arch: ["x86_64"]
+                os: [ubuntu-20.04, windows-2019, macos-11]
+                arch: ["x86_64"]
                 include:
                   - os: windows-2019
                     arch: win_amd64
                   - os: windows-2019
                     arch: win32
-                #   - os: ubuntu-20.04
-                #     arch: i686
-                #   - os: ubuntu-20.04
-                #     arch: aarch64
-                #   - os: ubuntu-20.04
-                #     arch: ppc64le
-                #   - os: ubuntu-20.04
-                #     arch: s390x
-                # exclude:
-                #   - os: windows-2019
-                #     arch: "x86_64"
+                  - os: ubuntu-20.04
+                    arch: i686
+                  - os: ubuntu-20.04
+                    arch: aarch64
+                  - os: ubuntu-20.04
+                    arch: ppc64le
+                  - os: ubuntu-20.04
+                    arch: s390x
+                exclude:
+                  - os: windows-2019
+                    arch: "x86_64"
         steps:
           - name: Checkout repo
             uses: actions/checkout@v3
@@ -85,17 +87,6 @@ jobs:
             uses: docker/setup-qemu-action@v2
             with:
                 platforms: all
-          - name: Prepare compiler environment for Windows
-            if: runner.os == 'Windows'
-            uses: ilammy/msvc-dev-cmd@v1
-            with:
-                arch: x64
-          - name: Set Windows environment variables
-            if: runner.os == 'Windows'
-            shell: bash
-            run: |
-                echo "DISTUTILS_USE_SDK=1" >> $GITHUB_ENV
-                echo "MSSdk=1" >> $GITHUB_ENV
           - name: Build and test wheels
             uses: pypa/cibuildwheel@v1.12.0
             env:
@@ -112,9 +103,46 @@ jobs:
                 path: wheelhouse/*.whl
                 if-no-files-found: error
     
+    wheels-win27:
+        name: Build Python 2.7 wheels on Windows ${{ matrix.arch }}
+        runs-on: windows-2019
+        strategy:
+            fail-fast: false
+            matrix:
+                arch: ["amd64", "win32"]
+        steps:
+          - name: Checkout repo
+            uses: actions/checkout@v3
+          - name: Prepare compiler environment for Windows
+            if: runner.os == 'Windows'
+            uses: ilammy/msvc-dev-cmd@v1
+            with:
+                arch: ${{ matrix.arch }}
+          - name: Set Windows environment variables
+            if: runner.os == 'Windows'
+            shell: bash
+            run: |
+                echo "DISTUTILS_USE_SDK=1" >> $GITHUB_ENV
+                echo "MSSdk=1" >> $GITHUB_ENV
+          - name: Build and test wheels
+            uses: pypa/cibuildwheel@v1.12.0
+            env:
+                CIBW_ARCHS: all
+                CIBW_BUILD_VERBOSITY: 3
+                CIBW_BUILD: "*27*${{ matrix.arch }}"
+                CIBW_TEST_REQUIRES: pytest
+                CIBW_TEST_COMMAND: pytest {package}/tests
+          - name: Upload wheels
+            uses: actions/upload-artifact@v3
+            with:
+                name: ${{ runner.os }}-${{ matrix.arch }}
+                path: wheelhouse/*.whl
+                if-no-files-found: error
+
     sdist:
         name: Build sdist
         runs-on: ubuntu-latest
+        if: ${{ false }}
         steps:
           - name: Checkout repo
             uses: actions/checkout@v3
