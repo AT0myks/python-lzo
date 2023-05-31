@@ -86,7 +86,7 @@ def gen_all(src):
             raise lzo.error("internal error 1: %r %r", src, u1)
         if a0 != a1:
             raise lzo.error("internal error 2")
-        print(f"compressed using {algo} {len(src): 6} -> {len(c): 6}")
+        print("compressed using {} {:6} -> {:6}".format(algo, len(src), len(c)))
 
 
 def gen_raw(src, level=1):
