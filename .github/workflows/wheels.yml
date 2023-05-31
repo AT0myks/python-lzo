@@ -10,7 +10,6 @@ jobs:
     wheels:
         name: Build wheels on ${{ matrix.os }} for ${{ matrix.arch }}
         runs-on: ${{ matrix.os }}
-        if: ${{ false }}
         strategy:
             fail-fast: false
             matrix:
@@ -45,8 +44,7 @@ jobs:
           - name: Build and test wheels
             uses: pypa/cibuildwheel@v2.12.3
             env:
-                CIBW_BUILD: "cp36-*${{ matrix.arch }}"
-                # CIBW_BUILD: "*${{ matrix.arch }}"
+                CIBW_BUILD: "*${{ matrix.arch }}"
           - name: Upload wheels
             uses: actions/upload-artifact@v3
             with:
@@ -57,7 +55,6 @@ jobs:
     wheels-old:
         name: Build old wheels on ${{ matrix.os }} for ${{ matrix.arch }}
         runs-on: ${{ matrix.os }}
-        if: ${{ false }}
         strategy:
             fail-fast: false
             matrix:
@@ -127,7 +124,6 @@ jobs:
           - name: Build and test wheels
             uses: pypa/cibuildwheel@v1.12.0
             env:
-                CIBW_ARCHS: all
                 CIBW_BUILD_VERBOSITY: 3
                 CIBW_BUILD: "*27*${{ matrix.arch }}"
                 CIBW_TEST_REQUIRES: pytest
@@ -142,7 +138,6 @@ jobs:
     sdist:
         name: Build sdist
         runs-on: ubuntu-latest
-        if: ${{ false }}
         steps:
           - name: Checkout repo
             uses: actions/checkout@v3
@@ -170,9 +165,8 @@ jobs:
     publish:
         name: Publish builds on PyPI
         runs-on: ubuntu-latest
-        if: ${{ false }}
-        needs: [wheels, sdist, wheels-old]
-        # if: ${{ always() && (needs.wheels.result == 'success' || needs.sdist.result  == 'success') }}
+        needs: [sdist, wheels, wheels-old, wheels-win27]
+        if: ${{ always() && (needs.sdist.result  == 'success' || needs.wheels.result == 'success' || needs.wheels-old.result == 'success' || needs.wheels-win27.result == 'success') }}
         environment:
             name: release
             url: https://test.pypi.org/p/python-lzo

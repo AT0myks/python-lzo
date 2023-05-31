@@ -87,8 +87,8 @@ Python version that it can run tests for.
 
 # Releasing
 
-1. Update version in `pyproject.toml` and the `MODULE_VERSION` define in
-   `lzomodule.c`.
+1. Update version in `pyproject.toml`, `setup.py` and the `MODULE_VERSION`
+    define in `lzomodule.c`.
 1. Update NEWS.
 1. Tag with new release.
 1. wheels (download from github actions)
