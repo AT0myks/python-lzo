@@ -144,7 +144,14 @@ def test_lzo_big_raw():
     gen_raw(b" " * 131072)
 
 
-if sys.maxsize > 1<<32 and sys.implementation.name != "pypy":
+def is_pypy():
+    if sys.version_info >= (3, 3):
+        return sys.implementation.name == "pypy"
+    else:
+        return "pypy" in sys.version.lower()
+
+
+if sys.maxsize > 1<<32 and not is_pypy():
     # This test raises OverflowError on 32-bit Pythons. Compressing
     # this much data requires a 64-bit system.
     # On PyPy it raises MemoryError.
