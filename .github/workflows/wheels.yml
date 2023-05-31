@@ -54,13 +54,13 @@ jobs:
                 if-no-files-found: error
                 
     wheels-old:
-        name: Build wheels on ${{ matrix.os }} for ${{ matrix.arch }}
+        name: Build old wheels on ${{ matrix.os }} for ${{ matrix.arch }}
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
             matrix:
                 os: [ubuntu-20.04, windows-2019, macos-11]
-                arch: ["x86_64", "arm64"]
+                arch: ["x86_64"]
                 include:
                   - os: windows-2019
                     arch: win_amd64
@@ -77,8 +77,6 @@ jobs:
                 exclude:
                   - os: windows-2019
                     arch: "x86_64"
-                  - os: ubuntu-20.04
-                    arch: "arm64"
         steps:
           - name: Checkout repo
             uses: actions/checkout@v3
@@ -90,8 +88,12 @@ jobs:
           - name: Build and test wheels
             uses: pypa/cibuildwheel@v1.12.0
             env:
+                CIBW_ARCHS: all
+                CIBW_BUILD_VERBOSITY: 3
                 CIBW_BUILD: "*${{ matrix.arch }}"
-                CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* pp37-*
+                CIBW_SKIP: cp36-* cp37-* cp38-* cp39-* pp37-* pp*-macosx* cp35-macosx_x86_64
+                CIBW_TEST_REQUIRES: pytest
+                CIBW_TEST_COMMAND: pytest {package}/tests
           - name: Upload wheels
             uses: actions/upload-artifact@v3
             with:
