@@ -59,24 +59,24 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-20.04, windows-2019, macos-11]
-                arch: ["x86_64"]
+                # os: [ubuntu-20.04, windows-2019, macos-11]
+                # arch: ["x86_64"]
                 include:
                   - os: windows-2019
                     arch: win_amd64
                   - os: windows-2019
                     arch: win32
-                  - os: ubuntu-20.04
-                    arch: i686
-                  - os: ubuntu-20.04
-                    arch: aarch64
-                  - os: ubuntu-20.04
-                    arch: ppc64le
-                  - os: ubuntu-20.04
-                    arch: s390x
-                exclude:
-                  - os: windows-2019
-                    arch: "x86_64"
+                #   - os: ubuntu-20.04
+                #     arch: i686
+                #   - os: ubuntu-20.04
+                #     arch: aarch64
+                #   - os: ubuntu-20.04
+                #     arch: ppc64le
+                #   - os: ubuntu-20.04
+                #     arch: s390x
+                # exclude:
+                #   - os: windows-2019
+                #     arch: "x86_64"
         steps:
           - name: Checkout repo
             uses: actions/checkout@v3
@@ -85,6 +85,17 @@ jobs:
             uses: docker/setup-qemu-action@v2
             with:
                 platforms: all
+          - name: Prepare compiler environment for Windows
+            if: runner.os == 'Windows'
+            uses: ilammy/msvc-dev-cmd@v1
+            with:
+                arch: x64
+          - name: Set Windows environment variables
+            if: runner.os == 'Windows'
+            shell: bash
+            run: |
+                echo "DISTUTILS_USE_SDK=1" >> $GITHUB_ENV
+                echo "MSSdk=1" >> $GITHUB_ENV
           - name: Build and test wheels
             uses: pypa/cibuildwheel@v1.12.0
             env:
